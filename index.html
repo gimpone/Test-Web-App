@@ -1227,49 +1227,59 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
 // ── Export ─────────────────────────────────────────────────────
 
 document.getElementById('export-btn').addEventListener('click', () => {
-  if (typeof XLSX === 'undefined') {
-    alert('Export library not loaded. Please check your internet connection.');
-    return;
-  }
   if (tasks.length === 0) { alert('No tasks to export.'); return; }
 
   const statusLabels = { overdue: 'Overdue', 'due-soon': 'Due Soon', ok: 'Up to Date', never: 'Not Started' };
-  const wb = XLSX.utils.book_new();
+
+  function cell(value, type = 'String') {
+    const v = String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return `<Cell><Data ss:Type="${type}">${v}</Data></Cell>`;
+  }
+  function row(cells) { return `<Row>${cells.join('')}</Row>`; }
+  function sheet(name, rows) { return `<Worksheet ss:Name="${name}"><Table>${rows.join('')}</Table></Worksheet>`; }
 
   // Sheet 1 — Task Summary
-  const summaryRows = [['Task Name', 'Group', 'Repeat Interval', 'Status', 'Last Completed', 'Total Completions']];
-  tasks.forEach(t => {
-    summaryRows.push([
-      t.name,
-      t.group || 'General',
-      fmtInterval(t.interval, t.intervalUnit),
-      statusLabels[getStatus(t)],
-      t.lastCompleted ? fmtDate(t.lastCompleted) : 'Never',
-      (t.completionHistory || []).length,
-    ]);
-  });
-  const ws1 = XLSX.utils.aoa_to_sheet(summaryRows);
-  ws1['!cols'] = [32, 16, 16, 14, 18, 18].map(w => ({ wch: w }));
-  XLSX.utils.book_append_sheet(wb, ws1, 'Tasks');
+  const taskRows = [
+    row(['Task Name','Group','Repeat Interval','Status','Last Completed','Total Completions'].map(h => cell(h))),
+    ...tasks.map(t => row([
+      cell(t.name),
+      cell(t.group || 'General'),
+      cell(fmtInterval(t.interval, t.intervalUnit)),
+      cell(statusLabels[getStatus(t)]),
+      cell(t.lastCompleted ? fmtDate(t.lastCompleted) : 'Never'),
+      cell((t.completionHistory || []).length, 'Number'),
+    ])),
+  ];
 
-  // Sheet 2 — Full Completion History
-  const historyRows = [['Task Name', 'Group', 'Entry #', 'Date Completed']];
+  // Sheet 2 — Completion History
+  const historyRows = [
+    row(['Task Name','Group','Entry #','Date Completed'].map(h => cell(h))),
+  ];
   tasks.forEach(t => {
     const history = t.completionHistory || [];
     [...history].reverse().forEach((iso, i) => {
-      historyRows.push([
-        t.name,
-        t.group || 'General',
-        history.length - i,
-        fmtDate(iso),
-      ]);
+      historyRows.push(row([
+        cell(t.name),
+        cell(t.group || 'General'),
+        cell(history.length - i, 'Number'),
+        cell(fmtDate(iso)),
+      ]));
     });
   });
-  const ws2 = XLSX.utils.aoa_to_sheet(historyRows);
-  ws2['!cols'] = [32, 16, 10, 20].map(w => ({ wch: w }));
-  XLSX.utils.book_append_sheet(wb, ws2, 'History');
 
-  XLSX.writeFile(wb, 'home-maintenance.xlsx');
+  const xml = `<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  ${sheet('Tasks', taskRows)}
+  ${sheet('History', historyRows)}
+</Workbook>`;
+
+  const blob = new Blob([xml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href: url, download: 'home-maintenance.xls' });
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 
 // ── Modal wiring ───────────────────────────────────────────────
@@ -1297,6 +1307,5 @@ initTheme();
 loadTasks();
 render();
 </script>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </body>
 </html>
