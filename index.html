@@ -412,6 +412,22 @@ body {
 .history-date { flex: 1; }
 .history-index { color: #a1a1aa; font-size: .72rem; }
 
+.btn-history-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 3px;
+  color: #d4d4d8;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color .15s;
+  line-height: 1;
+  font-size: .8rem;
+}
+.btn-history-delete:hover { color: var(--red); }
+
 .history-total {
   font-size: .73rem;
   color: #a1a1aa;
@@ -915,12 +931,16 @@ function buildHistoryPanel(task) {
   if (history.length === 0) {
     return `<div class="history-panel"><p class="history-empty">No completions recorded yet.</p></div>`;
   }
-  const entries = [...history].reverse().map((iso, i) => `
+  const entries = [...history].reverse().map((iso, i) => {
+    const arrayIndex = history.length - 1 - i;
+    return `
     <li class="history-entry">
       <span class="history-dot"></span>
       <span class="history-date">${fmtDate(iso)}</span>
       <span class="history-index">#${history.length - i}</span>
-    </li>`).join('');
+      <button class="btn-history-delete" data-action="delete-history" data-id="${task.id}" data-index="${arrayIndex}" title="Remove entry">&#x2715;</button>
+    </li>`;
+  }).join('');
   return `<div class="history-panel">
     <ul class="history-list">${entries}</ul>
     <p class="history-total">${history.length} completion${history.length !== 1 ? 's' : ''} total</p>
@@ -939,6 +959,7 @@ document.addEventListener('click', e => {
   if (action === 'save-notes')   saveNotes(id);
   if (action === 'cancel-notes') cancelNotes(id);
   if (action === 'show-tab')     switchTab(id, btn.dataset.tab);
+  if (action === 'delete-history') deleteHistoryEntry(id, parseInt(btn.dataset.index, 10));
 });
 
 // ── Actions ────────────────────────────────────────────────────
@@ -951,6 +972,24 @@ function markComplete(id) {
   if (!t.completionHistory) t.completionHistory = [];
   t.completionHistory.push(now);
   saveTasks(); render();
+}
+
+function deleteHistoryEntry(id, index) {
+  const t = tasks.find(t => t.id === id);
+  if (!t || !t.completionHistory) return;
+  t.completionHistory.splice(index, 1);
+  // Keep lastCompleted in sync with the most recent remaining entry
+  t.lastCompleted = t.completionHistory.length
+    ? t.completionHistory[t.completionHistory.length - 1]
+    : null;
+  saveTasks();
+  // Refresh the history panel and tab label in-place (keeps tab open)
+  const card = document.querySelector(`.task-card[data-id="${id}"]`);
+  if (!card) return;
+  const histPanel = card.querySelector(`[data-panel-id="${id}"][data-panel="history"]`);
+  if (histPanel) histPanel.innerHTML = buildHistoryPanel(t);
+  const histTab = card.querySelector(`.card-tab[data-tab="history"]`);
+  if (histTab) histTab.textContent = `History${t.completionHistory.length ? ` (${t.completionHistory.length})` : ''}`;
 }
 
 function switchTab(id, tab) {
