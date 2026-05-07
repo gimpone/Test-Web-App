@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Maintenance Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Home Maintenance Tracker</h1>
+    </header>
+
+    <section class="add-task-section">
+      <h2>Add New Task</h2>
+      <form id="add-task-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="task-name">Task Name</label>
+            <input type="text" id="task-name" placeholder="e.g. Change HVAC filter" required>
+          </div>
+          <div class="form-group interval-group">
+            <label for="task-interval">Repeat Every</label>
+            <div class="interval-inputs">
+              <input type="number" id="task-interval" min="1" value="1" required>
+              <select id="task-interval-unit">
+                <option value="days">Days</option>
+                <option value="weeks">Weeks</option>
+                <option value="months" selected>Months</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="task-notes">Notes</label>
+          <textarea id="task-notes" placeholder="Optional instructions or notes for this task..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Task</button>
+      </form>
+    </section>
+
+    <section class="tasks-section">
+      <div class="tasks-header">
+        <h2>Tasks</h2>
+        <div class="filter-tabs">
+          <button class="tab active" data-filter="all">All</button>
+          <button class="tab" data-filter="overdue">Overdue</button>
+          <button class="tab" data-filter="due-soon">Due Soon</button>
+          <button class="tab" data-filter="ok">Up to Date</button>
+        </div>
+      </div>
+      <div id="task-list" class="task-list">
+        <p class="empty-state">No tasks yet. Add one above to get started.</p>
+      </div>
+    </section>
+  </div>
+
+  <div id="delete-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Remove Task</h3>
+      <p>Are you sure you want to remove <strong id="modal-task-name"></strong>?</p>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn btn-secondary">Cancel</button>
+        <button id="modal-confirm" class="btn btn-danger">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
