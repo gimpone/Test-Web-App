@@ -330,6 +330,95 @@ body {
 }
 .btn-notes-cancel:hover { background: var(--border); }
 
+/* ── Card Tabs ─────────────────────────────────────── */
+
+.card-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 14px;
+}
+
+.card-tab {
+  padding: 7px 12px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  font-size: .76rem;
+  font-weight: 600;
+  color: var(--muted);
+  font-family: inherit;
+  transition: color .15s;
+  letter-spacing: .01em;
+}
+
+.card-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.card-tab:hover:not(.active) { color: var(--text-soft); }
+
+/* ── History Panel ─────────────────────────────────── */
+
+.card-panel { display: block; }
+.card-panel.hidden { display: none; }
+
+.history-panel { padding: 12px 14px 4px; }
+
+.history-empty {
+  font-size: .8rem;
+  color: #a1a1aa;
+  font-style: italic;
+  padding: 4px 0 8px;
+}
+
+.history-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.history-list::-webkit-scrollbar { width: 4px; }
+.history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.history-entry {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f4f4f5;
+  font-size: .78rem;
+  color: var(--text-soft);
+}
+
+.history-entry:last-child { border-bottom: none; }
+
+.history-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+
+.history-entry:not(:first-child) .history-dot { background: #d4d4d8; }
+
+.history-date { flex: 1; }
+.history-index { color: #a1a1aa; font-size: .72rem; }
+
+.history-total {
+  font-size: .73rem;
+  color: #a1a1aa;
+  margin-top: 8px;
+  padding-bottom: 6px;
+}
+
 /* ── Card Footer ───────────────────────────────────── */
 
 .card-footer { padding: 0 14px 12px; }
@@ -641,6 +730,12 @@ let pendingDeleteId = null;
 function loadTasks() {
   try { tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
   catch { tasks = []; }
+  // Migrate tasks saved before history tracking was added
+  tasks.forEach(t => {
+    if (!t.completionHistory) {
+      t.completionHistory = t.lastCompleted ? [t.lastCompleted] : [];
+    }
+  });
 }
 
 function saveTasks() {
@@ -757,23 +852,34 @@ function buildCard(task) {
     ? `<span><strong>Next due:</strong> ${fmtDate(due.toISOString())}</span>`
     : '';
 
+  const history = task.completionHistory || [];
+
   return `
     <div class="task-card status-${status}" data-id="${task.id}">
       <div class="card-accent"></div>
-      <div class="card-body">
-        <div class="card-top">
-          <span class="task-name">${esc(task.name)}</span>
-          <button class="card-delete" data-action="delete" data-id="${task.id}" title="Remove task">${xSvg}</button>
+      <div class="card-tabs">
+        <button class="card-tab active" data-action="show-tab" data-id="${task.id}" data-tab="details">Details</button>
+        <button class="card-tab" data-action="show-tab" data-id="${task.id}" data-tab="history">History${history.length ? ` (${history.length})` : ''}</button>
+      </div>
+      <div class="card-panel" data-panel-id="${task.id}" data-panel="details">
+        <div class="card-body">
+          <div class="card-top">
+            <span class="task-name">${esc(task.name)}</span>
+            <button class="card-delete" data-action="delete" data-id="${task.id}" title="Remove task">${xSvg}</button>
+          </div>
+          <div class="card-chips">
+            <span class="chip chip-status-${status}">${statusLabels[status]}</span>
+            <span class="chip chip-interval">${repeatSvg}${esc(fmtInterval(task.interval, task.intervalUnit))}</span>
+          </div>
+          <div class="card-dates">
+            ${lastDone}
+            ${nextDue}
+          </div>
+          ${buildNotesBlock(task)}
         </div>
-        <div class="card-chips">
-          <span class="chip chip-status-${status}">${statusLabels[status]}</span>
-          <span class="chip chip-interval">${repeatSvg}${esc(fmtInterval(task.interval, task.intervalUnit))}</span>
-        </div>
-        <div class="card-dates">
-          ${lastDone}
-          ${nextDue}
-        </div>
-        ${buildNotesBlock(task)}
+      </div>
+      <div class="card-panel hidden" data-panel-id="${task.id}" data-panel="history">
+        ${buildHistoryPanel(task)}
       </div>
       <div class="card-footer">
         <button class="btn-complete" data-action="complete" data-id="${task.id}">
@@ -804,6 +910,23 @@ function buildNotesEditor(task) {
   </div>`;
 }
 
+function buildHistoryPanel(task) {
+  const history = task.completionHistory || [];
+  if (history.length === 0) {
+    return `<div class="history-panel"><p class="history-empty">No completions recorded yet.</p></div>`;
+  }
+  const entries = [...history].reverse().map((iso, i) => `
+    <li class="history-entry">
+      <span class="history-dot"></span>
+      <span class="history-date">${fmtDate(iso)}</span>
+      <span class="history-index">#${history.length - i}</span>
+    </li>`).join('');
+  return `<div class="history-panel">
+    <ul class="history-list">${entries}</ul>
+    <p class="history-total">${history.length} completion${history.length !== 1 ? 's' : ''} total</p>
+  </div>`;
+}
+
 // ── Delegated Click Handler ────────────────────────────────────
 
 document.addEventListener('click', e => {
@@ -815,6 +938,7 @@ document.addEventListener('click', e => {
   if (action === 'edit-notes')   showNotesEditor(id);
   if (action === 'save-notes')   saveNotes(id);
   if (action === 'cancel-notes') cancelNotes(id);
+  if (action === 'show-tab')     switchTab(id, btn.dataset.tab);
 });
 
 // ── Actions ────────────────────────────────────────────────────
@@ -822,8 +946,18 @@ document.addEventListener('click', e => {
 function markComplete(id) {
   const t = tasks.find(t => t.id === id);
   if (!t) return;
-  t.lastCompleted = new Date().toISOString();
+  const now = new Date().toISOString();
+  t.lastCompleted = now;
+  if (!t.completionHistory) t.completionHistory = [];
+  t.completionHistory.push(now);
   saveTasks(); render();
+}
+
+function switchTab(id, tab) {
+  const card = document.querySelector(`.task-card[data-id="${id}"]`);
+  if (!card) return;
+  card.querySelectorAll('.card-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+  card.querySelectorAll(`[data-panel-id="${id}"]`).forEach(panel => panel.classList.toggle('hidden', panel.dataset.panel !== tab));
 }
 
 function openDeleteModal(id) {
@@ -898,7 +1032,7 @@ document.getElementById('add-task-form').addEventListener('submit', e => {
   tasks.push({
     id: `task_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
     name, group: group || 'General', interval: n, intervalUnit: unit, notes,
-    lastCompleted: null,
+    lastCompleted: null, completionHistory: [],
   });
   saveTasks(); closeAddModal(); render();
 });
