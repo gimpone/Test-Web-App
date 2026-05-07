@@ -5,47 +5,580 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#18181b">
   <title>Home Maintenance</title>
-  <link rel="stylesheet" href="styles.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f4f4f5;
+  --card: #ffffff;
+  --bar: #18181b;
+  --accent: #2563eb;
+  --green: #16a34a;
+  --orange: #ea580c;
+  --red: #dc2626;
+  --muted: #71717a;
+  --border: #e4e4e7;
+  --text: #18181b;
+  --text-soft: #52525b;
+  --radius: 14px;
+  --shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.06);
+}
+
+html { height: 100%; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── App Bar ───────────────────────────────────────── */
+
+.app-bar {
+  background: var(--bar);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+
+.app-bar-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-bar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+
+.brand-icon { width: 20px; height: 20px; opacity: .9; }
+
+.fab-add {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, transform .1s;
+}
+.fab-add svg { width: 17px; height: 17px; stroke: #fff; }
+.fab-add:hover { background: #1d4ed8; }
+.fab-add:active { transform: scale(.92); }
+
+/* ── Filter Bar ────────────────────────────────────── */
+
+.filter-bar {
+  background: var(--bar);
+  padding: 0 20px 11px;
+}
+
+.filter-pills {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.filter-pills::-webkit-scrollbar { display: none; }
+
+.pill {
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(255,255,255,.18);
+  background: transparent;
+  color: rgba(255,255,255,.6);
+  font-size: .78rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pill:hover:not(.active) { border-color: rgba(255,255,255,.4); color: rgba(255,255,255,.9); }
+
+/* ── Main Content ──────────────────────────────────── */
+
+.main-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+/* ── Group Section ─────────────────────────────────── */
+
+.group-section { margin-bottom: 32px; }
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.group-title {
+  font-size: .82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--muted);
+}
+
+.group-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.group-count {
+  font-size: .75rem;
+  color: #a1a1aa;
+  font-weight: 500;
+}
+
+/* ── Task Grid ─────────────────────────────────────── */
+
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+/* ── Task Card ─────────────────────────────────────── */
+
+.task-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-accent { height: 4px; background: var(--border); }
+.task-card.status-overdue  .card-accent { background: var(--red); }
+.task-card.status-due-soon .card-accent { background: var(--orange); }
+.task-card.status-ok       .card-accent { background: var(--green); }
+.task-card.status-never    .card-accent { background: #a1a1aa; }
+
+.card-body { padding: 14px 14px 12px; flex: 1; }
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.task-name {
+  font-size: .97rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+  flex: 1;
+}
+
+.card-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 1px;
+  color: #d4d4d8;
+  flex-shrink: 0;
+  border-radius: 4px;
+  display: flex;
+  transition: color .15s;
+}
+.card-delete svg { width: 15px; height: 15px; }
+.card-delete:hover { color: var(--red); }
+
+/* ── Chips ─────────────────────────────────────────── */
+
+.card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: .72rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.chip svg { width: 10px; height: 10px; flex-shrink: 0; }
+
+.chip-interval   { background: #f1f5f9; color: var(--text-soft); border: 1px solid #e2e8f0; }
+.chip-status-overdue  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.chip-status-due-soon { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+.chip-status-ok       { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.chip-status-never    { background: #fafafa; color: #71717a;  border: 1px solid #e4e4e7; }
+
+/* ── Dates ─────────────────────────────────────────── */
+
+.card-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 10px;
+  font-size: .75rem;
+  color: var(--muted);
+}
+
+.card-dates strong { color: var(--text-soft); font-weight: 500; }
+
+/* ── Notes ─────────────────────────────────────────── */
+
+.card-notes {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.notes-text {
+  font-size: .8rem;
+  color: var(--text-soft);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.notes-placeholder {
+  font-size: .8rem;
+  color: #a1a1aa;
+  font-style: italic;
+}
+
+.btn-notes-edit {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: .75rem;
+  color: var(--accent);
+  padding: 0;
+  font-family: inherit;
+  margin-top: 4px;
+  display: inline-block;
+}
+.btn-notes-edit:hover { text-decoration: underline; }
+
+.notes-editor-wrap textarea {
+  width: 100%;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: .8rem;
+  color: var(--text);
+  background: #eff6ff;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.5;
+}
+.notes-editor-wrap textarea:focus { outline: none; border-color: var(--accent); }
+
+.notes-editor-actions { display: flex; gap: 6px; margin-top: 6px; }
+
+.btn-notes-save {
+  padding: 4px 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: .77rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-notes-save:hover { background: #1d4ed8; }
+
+.btn-notes-cancel {
+  padding: 4px 10px;
+  background: #f4f4f5;
+  color: var(--text-soft);
+  border: none;
+  border-radius: 6px;
+  font-size: .77rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-notes-cancel:hover { background: var(--border); }
+
+/* ── Card Footer ───────────────────────────────────── */
+
+.card-footer { padding: 0 14px 12px; }
+
+.btn-complete {
+  width: 100%;
+  padding: 9px;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: .86rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background .15s, transform .1s;
+}
+.btn-complete svg { width: 14px; height: 14px; }
+.btn-complete:hover { background: #15803d; }
+.btn-complete:active { transform: scale(.98); }
+
+/* ── Empty State ───────────────────────────────────── */
+
+.empty-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 24px;
+  gap: 14px;
+  color: var(--muted);
+  text-align: center;
+}
+.empty-wrap svg { width: 48px; height: 48px; opacity: .3; }
+.empty-wrap p { font-size: .95rem; }
+.empty-wrap button {
+  margin-top: 4px;
+  padding: 9px 22px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.empty-wrap button:hover { background: #1d4ed8; }
+
+/* ── Overlay / Sheet ───────────────────────────────── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.overlay.hidden { display: none; }
+
+.sheet {
+  background: var(--card);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 560px;
+  padding: 0 22px 36px;
+  max-height: 92vh;
+  overflow-y: auto;
+  animation: slideUp .22s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.sheet-handle {
+  width: 38px; height: 4px;
+  background: #e4e4e7;
+  border-radius: 2px;
+  margin: 12px auto 4px;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 16px;
+}
+.sheet-header h2 { font-size: 1.1rem; font-weight: 700; }
+
+.sheet-close {
+  background: #f4f4f5;
+  border: none;
+  border-radius: 50%;
+  width: 30px; height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+.sheet-close svg { width: 14px; height: 14px; stroke: var(--muted); }
+.sheet-close:hover { background: #e4e4e7; }
+
+/* ── Form Fields ───────────────────────────────────── */
+
+.field { margin-bottom: 16px; }
+
+.field label {
+  display: block;
+  font-size: .81rem;
+  font-weight: 500;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+}
+
+.field .optional { font-size: .74rem; color: #a1a1aa; font-weight: 400; }
+
+.field input[type="text"],
+.field textarea,
+.field select,
+.field input[type="number"] {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: .92rem;
+  color: var(--text);
+  background: #fff;
+  font-family: inherit;
+  transition: border-color .15s;
+}
+.field input:focus,
+.field textarea:focus,
+.field select:focus { outline: none; border-color: var(--accent); }
+
+.field textarea { resize: vertical; min-height: 76px; line-height: 1.5; }
+
+.interval-row { display: flex; gap: 10px; }
+.interval-row input[type="number"] { width: 86px; flex-shrink: 0; }
+.interval-row select { flex: 1; }
+
+.btn-submit {
+  width: 100%;
+  padding: 13px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 11px;
+  font-size: .95rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s;
+  margin-top: 6px;
+}
+.btn-submit:hover { background: #1d4ed8; }
+
+/* ── Delete Dialog ─────────────────────────────────── */
+
+#delete-overlay { align-items: center; }
+
+.dialog {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: calc(100% - 48px);
+  max-width: 360px;
+  margin: auto;
+  animation: fadeIn .18s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.dialog h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+.dialog p  { font-size: .9rem; color: var(--text-soft); margin-bottom: 20px; line-height: 1.5; }
+
+.dialog-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+.btn-dialog-cancel {
+  padding: 8px 18px;
+  background: #f4f4f5;
+  color: var(--text-soft);
+  border: none; border-radius: 8px;
+  font-size: .88rem; font-weight: 500;
+  cursor: pointer; font-family: inherit;
+}
+.btn-dialog-cancel:hover { background: var(--border); }
+
+.btn-dialog-danger {
+  padding: 8px 18px;
+  background: var(--red);
+  color: #fff;
+  border: none; border-radius: 8px;
+  font-size: .88rem; font-weight: 500;
+  cursor: pointer; font-family: inherit;
+  transition: background .15s;
+}
+.btn-dialog-danger:hover { background: #b91c1c; }
+
+@media (min-width: 600px) {
+  .sheet { border-radius: 20px; margin-bottom: 32px; }
+}
+</style>
 </head>
 <body>
 
-  <div class="app">
-
-    <header class="app-bar">
-      <div class="app-bar-inner">
-        <div class="app-bar-brand">
-          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-            <path d="M9 21V12h6v9"/>
-          </svg>
-          <span>Maintenance</span>
-        </div>
-        <button class="fab-add" id="open-add-modal" aria-label="Add task" title="Add task">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-        </button>
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <div class="app-bar-brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+          <path d="M9 21V12h6v9"/>
+        </svg>
+        <span>Home Maintenance</span>
       </div>
-    </header>
-
-    <div class="filter-bar">
-      <div class="filter-pills" id="filter-pills">
-        <button class="pill active" data-filter="all">All</button>
-        <button class="pill" data-filter="overdue">Overdue</button>
-        <button class="pill" data-filter="due-soon">Due Soon</button>
-        <button class="pill" data-filter="ok">Up to Date</button>
-      </div>
+      <button class="fab-add" id="open-add-modal" aria-label="Add task" title="Add task">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
     </div>
+  </header>
 
-    <main class="main-content">
-      <div id="task-list"></div>
-    </main>
-
+  <div class="filter-bar">
+    <div class="filter-pills" id="filter-pills">
+      <button class="pill active" data-filter="all">All</button>
+      <button class="pill" data-filter="overdue">Overdue</button>
+      <button class="pill" data-filter="due-soon">Due Soon</button>
+      <button class="pill" data-filter="ok">Up to Date</button>
+    </div>
   </div>
 
+  <main class="main-content" id="main-content"></main>
+
   <!-- Add Task Sheet -->
-  <div id="add-overlay" class="overlay hidden" aria-modal="true" role="dialog">
-    <div class="sheet" id="add-sheet">
+  <div id="add-overlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="sheet">
       <div class="sheet-handle"></div>
       <div class="sheet-header">
         <h2>New Task</h2>
@@ -59,6 +592,11 @@
         <div class="field">
           <label for="task-name">Task name</label>
           <input type="text" id="task-name" placeholder="e.g. Change HVAC filter" required>
+        </div>
+        <div class="field">
+          <label for="task-group">Group <span class="optional">room or category</span></label>
+          <input type="text" id="task-group" list="group-suggestions" placeholder="e.g. Kitchen, Garage, Exterior…">
+          <datalist id="group-suggestions"></datalist>
         </div>
         <div class="field">
           <label>Repeat every</label>
@@ -80,8 +618,8 @@
     </div>
   </div>
 
-  <!-- Delete Confirm Modal -->
-  <div id="delete-overlay" class="overlay hidden" aria-modal="true" role="dialog">
+  <!-- Delete Confirm -->
+  <div id="delete-overlay" class="overlay hidden" role="dialog" aria-modal="true">
     <div class="dialog">
       <h3>Remove task?</h3>
       <p>Remove <strong id="modal-task-name"></strong> from your list?</p>
@@ -92,6 +630,319 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+<script>
+const STORAGE_KEY = 'home_maintenance_tasks';
+let tasks = [];
+let activeFilter = 'all';
+let pendingDeleteId = null;
+
+// ── Persistence ────────────────────────────────────────────────
+
+function loadTasks() {
+  try { tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { tasks = []; }
+}
+
+function saveTasks() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+}
+
+// ── Date / Status ──────────────────────────────────────────────
+
+function addInterval(date, n, unit) {
+  const d = new Date(date);
+  if (unit === 'days')   d.setDate(d.getDate() + n);
+  if (unit === 'weeks')  d.setDate(d.getDate() + n * 7);
+  if (unit === 'months') d.setMonth(d.getMonth() + n);
+  return d;
+}
+
+function getStatus(task) {
+  if (!task.lastCompleted) return 'never';
+  const due = addInterval(task.lastCompleted, task.interval, task.intervalUnit);
+  const days = Math.ceil((due - new Date()) / 86400000);
+  if (days < 0) return 'overdue';
+  if (days <= 7) return 'due-soon';
+  return 'ok';
+}
+
+function getDueDate(task) {
+  return task.lastCompleted
+    ? addInterval(task.lastCompleted, task.interval, task.intervalUnit)
+    : null;
+}
+
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function fmtInterval(n, unit) {
+  return `Every ${n} ${n === 1 ? unit.replace(/s$/, '') : unit}`;
+}
+
+// ── Render ─────────────────────────────────────────────────────
+
+function matchesFilter(task) {
+  const s = getStatus(task);
+  if (activeFilter === 'all') return true;
+  if (activeFilter === 'overdue')   return s === 'overdue' || s === 'never';
+  if (activeFilter === 'due-soon')  return s === 'due-soon';
+  if (activeFilter === 'ok')        return s === 'ok';
+  return true;
+}
+
+function render() {
+  const main = document.getElementById('main-content');
+  const filtered = tasks.filter(matchesFilter);
+
+  if (filtered.length === 0) {
+    const global = tasks.length === 0;
+    main.innerHTML = `
+      <div class="empty-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+          <path d="M9 21V12h6v9"/>
+        </svg>
+        <p>${global ? 'No tasks yet.' : 'No tasks match this filter.'}</p>
+        ${global ? `<button id="empty-add-btn">Add your first task</button>` : ''}
+      </div>`;
+    if (global) document.getElementById('empty-add-btn').addEventListener('click', openAddModal);
+    return;
+  }
+
+  // Build groups (preserve insertion order, ungrouped at end)
+  const groupMap = new Map();
+  filtered.forEach(task => {
+    const g = (task.group && task.group.trim()) ? task.group.trim() : 'General';
+    if (!groupMap.has(g)) groupMap.set(g, []);
+    groupMap.get(g).push(task);
+  });
+
+  // Sort groups alphabetically, but keep "General" last
+  const sorted = [...groupMap.entries()].sort(([a], [b]) => {
+    if (a === 'General' && b !== 'General') return 1;
+    if (b === 'General' && a !== 'General') return -1;
+    return a.localeCompare(b);
+  });
+
+  main.innerHTML = sorted.map(([group, groupTasks]) => `
+    <section class="group-section">
+      <div class="group-header">
+        <span class="group-title">${esc(group)}</span>
+        <span class="group-line"></span>
+        <span class="group-count">${groupTasks.length} task${groupTasks.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="task-grid">
+        ${groupTasks.map(buildCard).join('')}
+      </div>
+    </section>`).join('');
+
+  updateGroupSuggestions();
+}
+
+function buildCard(task) {
+  const status = getStatus(task);
+  const due = getDueDate(task);
+  const statusLabels = { overdue: 'Overdue', 'due-soon': 'Due Soon', ok: 'Up to Date', never: 'Not Started' };
+
+  const repeatSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`;
+  const checkSvg  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const xSvg      = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+
+  const lastDone = task.lastCompleted
+    ? `<span><strong>Last done:</strong> ${fmtDate(task.lastCompleted)}</span>`
+    : `<span>Never completed</span>`;
+
+  const nextDue = due
+    ? `<span><strong>Next due:</strong> ${fmtDate(due.toISOString())}</span>`
+    : '';
+
+  return `
+    <div class="task-card status-${status}" data-id="${task.id}">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="task-name">${esc(task.name)}</span>
+          <button class="card-delete" data-action="delete" data-id="${task.id}" title="Remove task">${xSvg}</button>
+        </div>
+        <div class="card-chips">
+          <span class="chip chip-status-${status}">${statusLabels[status]}</span>
+          <span class="chip chip-interval">${repeatSvg}${esc(fmtInterval(task.interval, task.intervalUnit))}</span>
+        </div>
+        <div class="card-dates">
+          ${lastDone}
+          ${nextDue}
+        </div>
+        ${buildNotesBlock(task)}
+      </div>
+      <div class="card-footer">
+        <button class="btn-complete" data-action="complete" data-id="${task.id}">
+          ${checkSvg} Mark Complete
+        </button>
+      </div>
+    </div>`;
+}
+
+function buildNotesBlock(task) {
+  const has = task.notes && task.notes.trim();
+  return `<div class="card-notes" data-notes-id="${task.id}">
+    ${has
+      ? `<div class="notes-text">${esc(task.notes)}</div>
+         <button class="btn-notes-edit" data-action="edit-notes" data-id="${task.id}">Edit note</button>`
+      : `<span class="notes-placeholder">No notes — <button class="btn-notes-edit" data-action="edit-notes" data-id="${task.id}" style="font-style:normal">add one</button></span>`
+    }
+  </div>`;
+}
+
+function buildNotesEditor(task) {
+  return `<div class="notes-editor-wrap">
+    <textarea data-notes-editor="${task.id}" placeholder="Add notes here...">${esc(task.notes || '')}</textarea>
+    <div class="notes-editor-actions">
+      <button class="btn-notes-save" data-action="save-notes" data-id="${task.id}">Save</button>
+      <button class="btn-notes-cancel" data-action="cancel-notes" data-id="${task.id}">Cancel</button>
+    </div>
+  </div>`;
+}
+
+// ── Delegated Click Handler ────────────────────────────────────
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const { action, id } = btn.dataset;
+  if (action === 'complete')     markComplete(id);
+  if (action === 'delete')       openDeleteModal(id);
+  if (action === 'edit-notes')   showNotesEditor(id);
+  if (action === 'save-notes')   saveNotes(id);
+  if (action === 'cancel-notes') cancelNotes(id);
+});
+
+// ── Actions ────────────────────────────────────────────────────
+
+function markComplete(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  t.lastCompleted = new Date().toISOString();
+  saveTasks(); render();
+}
+
+function openDeleteModal(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  pendingDeleteId = id;
+  document.getElementById('modal-task-name').textContent = t.name;
+  document.getElementById('delete-overlay').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+  pendingDeleteId = null;
+  document.getElementById('delete-overlay').classList.add('hidden');
+}
+
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  tasks = tasks.filter(t => t.id !== pendingDeleteId);
+  saveTasks(); closeDeleteModal(); render();
+}
+
+// ── Notes ──────────────────────────────────────────────────────
+
+function showNotesEditor(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  const el = document.querySelector(`[data-notes-id="${id}"]`);
+  if (el) { el.innerHTML = buildNotesEditor(t); el.querySelector('textarea').focus(); }
+}
+
+function saveNotes(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  const ed = document.querySelector(`[data-notes-editor="${id}"]`);
+  if (!ed) return;
+  t.notes = ed.value.trim();
+  saveTasks();
+  const el = document.querySelector(`[data-notes-id="${id}"]`);
+  if (el) el.outerHTML = buildNotesBlock(t);
+}
+
+function cancelNotes(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  const el = document.querySelector(`[data-notes-id="${id}"]`);
+  if (el) el.outerHTML = buildNotesBlock(t);
+}
+
+// ── Add Task ───────────────────────────────────────────────────
+
+function openAddModal() {
+  document.getElementById('add-overlay').classList.remove('hidden');
+  updateGroupSuggestions();
+  document.getElementById('task-name').focus();
+}
+
+function closeAddModal() {
+  document.getElementById('add-overlay').classList.add('hidden');
+  document.getElementById('add-task-form').reset();
+  document.getElementById('task-interval').value = '1';
+  document.getElementById('task-interval-unit').value = 'months';
+}
+
+document.getElementById('add-task-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const name  = document.getElementById('task-name').value.trim();
+  const group = document.getElementById('task-group').value.trim();
+  const n     = parseInt(document.getElementById('task-interval').value, 10);
+  const unit  = document.getElementById('task-interval-unit').value;
+  const notes = document.getElementById('task-notes').value.trim();
+  if (!name || n < 1) return;
+  tasks.push({
+    id: `task_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
+    name, group: group || 'General', interval: n, intervalUnit: unit, notes,
+    lastCompleted: null,
+  });
+  saveTasks(); closeAddModal(); render();
+});
+
+function updateGroupSuggestions() {
+  const groups = [...new Set(tasks.map(t => t.group || 'General').filter(Boolean))].sort();
+  document.getElementById('group-suggestions').innerHTML =
+    groups.map(g => `<option value="${esc(g)}">`).join('');
+}
+
+// ── Filters ────────────────────────────────────────────────────
+
+document.getElementById('filter-pills').addEventListener('click', e => {
+  const pill = e.target.closest('.pill');
+  if (!pill) return;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  activeFilter = pill.dataset.filter;
+  render();
+});
+
+// ── Modal wiring ───────────────────────────────────────────────
+
+document.getElementById('open-add-modal').addEventListener('click', openAddModal);
+document.getElementById('close-add-modal').addEventListener('click', closeAddModal);
+document.getElementById('add-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('add-overlay')) closeAddModal();
+});
+document.getElementById('modal-cancel').addEventListener('click', closeDeleteModal);
+document.getElementById('modal-confirm').addEventListener('click', confirmDelete);
+document.getElementById('delete-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('delete-overlay')) closeDeleteModal();
+});
+
+// ── Utility ────────────────────────────────────────────────────
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Boot ───────────────────────────────────────────────────────
+
+loadTasks();
+render();
+</script>
 </body>
 </html>
