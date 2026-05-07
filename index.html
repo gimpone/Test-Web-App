@@ -649,6 +649,95 @@ body {
 @media (min-width: 600px) {
   .sheet { border-radius: 20px; margin-bottom: 32px; }
 }
+
+/* ── Dark Mode ─────────────────────────────────────── */
+
+html[data-theme="dark"] {
+  --bg: #09090b;
+  --card: #18181b;
+  --bar: #0c0c0e;
+  --border: #27272a;
+  --text: #fafafa;
+  --text-soft: #a1a1aa;
+  --muted: #71717a;
+  --shadow: 0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+}
+
+html[data-theme="dark"] .chip-interval {
+  background: #27272a; color: #a1a1aa; border-color: #3f3f46;
+}
+html[data-theme="dark"] .chip-status-overdue {
+  background: #2d0606; color: #fca5a5; border-color: #7f1d1d;
+}
+html[data-theme="dark"] .chip-status-due-soon {
+  background: #2d1000; color: #fdba74; border-color: #7c2d12;
+}
+html[data-theme="dark"] .chip-status-ok {
+  background: #052e16; color: #86efac; border-color: #166534;
+}
+html[data-theme="dark"] .chip-status-never {
+  background: #27272a; color: #71717a; border-color: #3f3f46;
+}
+
+html[data-theme="dark"] .notes-editor-wrap textarea {
+  background: #27272a; border-color: #3b4a6b; color: #fafafa;
+}
+html[data-theme="dark"] .notes-text { color: #a1a1aa; }
+html[data-theme="dark"] .notes-placeholder { color: #52525b; }
+
+html[data-theme="dark"] .history-entry { border-bottom-color: #27272a; }
+html[data-theme="dark"] .history-empty { color: #52525b; }
+html[data-theme="dark"] .history-total { color: #52525b; }
+
+html[data-theme="dark"] .sheet,
+html[data-theme="dark"] .dialog { background: #18181b; }
+html[data-theme="dark"] .sheet-close { background: #27272a; }
+html[data-theme="dark"] .sheet-close:hover { background: #3f3f46; }
+html[data-theme="dark"] .sheet-handle { background: #3f3f46; }
+
+html[data-theme="dark"] .field input[type="text"],
+html[data-theme="dark"] .field textarea,
+html[data-theme="dark"] .field select,
+html[data-theme="dark"] .field input[type="number"] {
+  background: #27272a; border-color: #3f3f46; color: #fafafa;
+}
+html[data-theme="dark"] .field input::placeholder,
+html[data-theme="dark"] .field textarea::placeholder { color: #52525b; }
+
+html[data-theme="dark"] .btn-dialog-cancel { background: #27272a; color: #a1a1aa; }
+html[data-theme="dark"] .btn-dialog-cancel:hover { background: #3f3f46; }
+
+html[data-theme="dark"] .btn-notes-cancel { background: #27272a; color: #a1a1aa; }
+html[data-theme="dark"] .btn-notes-cancel:hover { background: #3f3f46; }
+
+html[data-theme="dark"] .card-tab { color: #52525b; }
+html[data-theme="dark"] .card-tab:hover:not(.active) { color: #a1a1aa; }
+
+html[data-theme="dark"] .empty-wrap { color: #52525b; }
+
+/* ── App Bar Action Buttons ────────────────────────── */
+
+.app-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.1);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+  color: rgba(255,255,255,.8);
+}
+.bar-btn svg { width: 16px; height: 16px; stroke: currentColor; }
+.bar-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
 </style>
 </head>
 <body>
@@ -662,11 +751,33 @@ body {
         </svg>
         <span>Home Maintenance</span>
       </div>
-      <button class="fab-add" id="open-add-modal" aria-label="Add task" title="Add task">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-      </button>
+      <div class="app-bar-actions">
+        <button class="bar-btn" id="export-btn" aria-label="Export to Excel" title="Export to Excel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="12" x2="12" y2="18"/>
+            <polyline points="9 15 12 18 15 15"/>
+          </svg>
+        </button>
+        <button class="bar-btn" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <button class="fab-add" id="open-add-modal" aria-label="Add task" title="Add task">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -1093,6 +1204,74 @@ document.getElementById('filter-pills').addEventListener('click', e => {
   render();
 });
 
+// ── Theme ──────────────────────────────────────────────────────
+
+const THEME_KEY = 'home_maintenance_theme';
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  document.getElementById('icon-sun').style.display  = theme === 'dark' ? 'none'  : '';
+  document.getElementById('icon-moon').style.display = theme === 'dark' ? ''      : 'none';
+}
+
+function initTheme() {
+  applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+}
+
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+});
+
+// ── Export ─────────────────────────────────────────────────────
+
+document.getElementById('export-btn').addEventListener('click', () => {
+  if (typeof XLSX === 'undefined') {
+    alert('Export library not loaded. Please check your internet connection.');
+    return;
+  }
+  if (tasks.length === 0) { alert('No tasks to export.'); return; }
+
+  const statusLabels = { overdue: 'Overdue', 'due-soon': 'Due Soon', ok: 'Up to Date', never: 'Not Started' };
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1 — Task Summary
+  const summaryRows = [['Task Name', 'Group', 'Repeat Interval', 'Status', 'Last Completed', 'Total Completions']];
+  tasks.forEach(t => {
+    summaryRows.push([
+      t.name,
+      t.group || 'General',
+      fmtInterval(t.interval, t.intervalUnit),
+      statusLabels[getStatus(t)],
+      t.lastCompleted ? fmtDate(t.lastCompleted) : 'Never',
+      (t.completionHistory || []).length,
+    ]);
+  });
+  const ws1 = XLSX.utils.aoa_to_sheet(summaryRows);
+  ws1['!cols'] = [32, 16, 16, 14, 18, 18].map(w => ({ wch: w }));
+  XLSX.utils.book_append_sheet(wb, ws1, 'Tasks');
+
+  // Sheet 2 — Full Completion History
+  const historyRows = [['Task Name', 'Group', 'Entry #', 'Date Completed']];
+  tasks.forEach(t => {
+    const history = t.completionHistory || [];
+    [...history].reverse().forEach((iso, i) => {
+      historyRows.push([
+        t.name,
+        t.group || 'General',
+        history.length - i,
+        fmtDate(iso),
+      ]);
+    });
+  });
+  const ws2 = XLSX.utils.aoa_to_sheet(historyRows);
+  ws2['!cols'] = [32, 16, 10, 20].map(w => ({ wch: w }));
+  XLSX.utils.book_append_sheet(wb, ws2, 'History');
+
+  XLSX.writeFile(wb, 'home-maintenance.xlsx');
+});
+
 // ── Modal wiring ───────────────────────────────────────────────
 
 document.getElementById('open-add-modal').addEventListener('click', openAddModal);
@@ -1114,8 +1293,10 @@ function esc(s) {
 
 // ── Boot ───────────────────────────────────────────────────────
 
+initTheme();
 loadTasks();
 render();
 </script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </body>
 </html>
